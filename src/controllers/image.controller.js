@@ -1,0 +1,58 @@
+const { StatusCodes } = require('http-status-codes')
+const { imageService } = require('../services')
+
+module.exports = {
+  create: async (req, res) => {
+    try {
+      const response = await imageService.create(req.user.id, req.file)
+      return res.status(StatusCodes.CREATED).json(response)
+    } catch (error) {
+      console.error(error)
+      return res
+        .status(
+          error.name === 'ValidationError'
+            ? StatusCodes.BAD_REQUEST
+            : error.status || StatusCodes.INTERNAL_SERVER_ERROR
+        )
+        .json(error.message)
+    }
+  },
+  get: async (req, res) => {
+    try {
+      const response = await imageService.get(req.params.id)
+      return res.status(StatusCodes.OK).json(response)
+    } catch (error) {
+      console.error(error)
+      return res
+        .status(error.status || StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(error.message)
+    }
+  },
+  list: async (req, res) => {
+    try {
+      const response = await imageService.list(req.query)
+
+      if (!response || response.data.length === 0) {
+        return res.status(StatusCodes.NO_CONTENT).end()
+      }
+
+      return res.status(StatusCodes.OK).json(response)
+    } catch (error) {
+      console.error(error)
+      return res
+        .status(error.status || StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(error.message)
+    }
+  },
+  delete: async (req, res) => {
+    try {
+      const response = await imageService.deleteOne(req.user.id, req.params.id)
+      return res.status(StatusCodes.NO_CONTENT).json(response)
+    } catch (error) {
+      console.error(error)
+      return res
+        .status(error.status || StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(error.message)
+    }
+  }
+}
